@@ -1,4 +1,4 @@
-## Ubuntu 20.04 with CUDA 11.2 and GROMACS 2021
+## Get basic image form https://catalog.ngc.nvidia.com/orgs/hpc/containers/gromacs/tags
 FROM nvcr.io/hpc/gromacs:2021
 
 
@@ -33,17 +33,30 @@ RUN apt-get install -y libgl1-mesa-glx
 RUN apt-get install -y libfontconfig1 libfontconfig 
 RUN apt-get install -y libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xkb1 libxkbcommon-x11-0 libxcb-util1 libxcb-shm0 libxcb-render0 libxcb-randr0 libxcb-shape0 libxcb-xinerama0 libxcb-xfixes0 libxkbcommon0 libxkbcommon-x11-0
 
+RUN apt-get install -y libarchive13
 
 ## Conda install
+# WORKDIR ${MMPBSA_HOME}
+# RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+# RUN bash miniconda.sh -b -p
+# RUN rm miniconda.sh
+# RUN conda update -y -n base -c defaults conda
+
+## Conda install 2
 WORKDIR ${MMPBSA_HOME}
 RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-RUN bash miniconda.sh -b -p
+RUN bash miniconda.sh -b -p /root/miniconda3
 RUN rm miniconda.sh
-RUN conda update -y -n base -c defaults conda
+RUN /root/miniconda3/bin/conda update -y -n base -c defaults conda
 
+RUN /root/miniconda3/bin/conda init
+RUN conda create -y -n myenv python=3.9
+ENV PATH=/root/miniconda3/envs/myenv/bin:$PATH
 
 ## Ambertools21 install 
-RUN conda install -y -c conda-forge ambertools=21 compilers
+# RUN conda install -y -c conda-forge ambertools=21 compilers
+RUN /root/miniconda3/bin/conda run -n myenv /bin/bash -c "conda install -y -c conda-forge ambertools=21 compilers"
+
 
 ## gmx_MMPBSA install
 RUN conda install -y pip
